@@ -41,7 +41,7 @@ $comments = $stmt->fetchAll();
 
     <div id="#comments-form"><h3>Please add your comment</h3>
 
-        <form method="POST" action="/gostewaya_kniga/index.php">
+        <form method="POST" action="index.php">
 
             <div>
 

@@ -55,7 +55,7 @@ if (!empty($_POST)) {
             "password" => sha1($_POST["password"].SALT), 
             "first_name" => $_POST["first_name"], 
             "last_name" => $_POST["last_name"]));
-        header("location: /gostewaya_kniga/login.php?registration=1");
+        header("location: login.php?registration=1");
     }
 }
 
@@ -77,7 +77,7 @@ if (!empty($_POST)) {
 
     <div>
 
-        <form method="POST" action="/gostewaya_kniga/registration.php">
+        <form method="POST" action="registration.php">
 
             <div style="color: red;">
                 <?php foreach ($errors as $error) :?>
