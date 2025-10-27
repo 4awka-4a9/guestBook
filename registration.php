@@ -2,7 +2,7 @@
 
 require_once("config.php");
 if (!empty($_SESSION["iser_id"])) {
-    header("location: /gostewaya_kniga/registration.php");
+    header("location: registration.php");
 }
 
 $errors = [];

@@ -2,7 +2,7 @@
 
 require_once("config.php");
 if (empty($_SESSION["user_id"])) {
-    header("location: /gostewaya_kniga/login.php");
+    header("location: login.php");
 }
 
 if (!empty($_POST["comment"])) {

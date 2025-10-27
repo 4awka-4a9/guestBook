@@ -2,7 +2,7 @@
 
 require_once("config.php");
 if (!empty($_SESSION["user_id"])) {
-    header("location: /gostewaya_kniga/index.php");
+    header("location: index.php");
 }
 
 $errors = [];
@@ -21,7 +21,7 @@ if (!empty($_POST)) {
         $id = $stmt->fetchColumn();
         if (!empty($id)) {
             $_SESSION["user_id"] = $id;
-            header("location: /gostewaya_kniga/index.php");
+            header("location: index.php");
         }
         else {
             $errors[] = "Please enter valid credentails";
