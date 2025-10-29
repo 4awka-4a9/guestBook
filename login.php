@@ -70,6 +70,11 @@ if (!empty($_POST)) {
                 <input type="submit" name="submit" value="Log in">
             </div>
 
+            <div>
+                <br>
+                <a href="registration.php">Don't have an account? Register now!</a>
+            </div>
+
         </form>
 
     </div>
