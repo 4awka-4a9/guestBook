@@ -1,12 +1,17 @@
 <?php
 
 require_once("config.php");
-if (!empty($_SESSION["iser_id"])) {
+if (!empty($_SESSION["user_id"])) {
     header("location: registration.php");
 }
 
 $errors = [];
 $isRegistered = 0;
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["user_name"];
+    $email = $_POST["email"];
+}
 
 if (!empty($_GET["registration"])) {
     $isRegistered = 1;
@@ -47,94 +52,242 @@ if (!empty($_POST)) {
     if ($_POST["password"] !== $_POST["confirm_password"]) {
         $errors[] = "Your confirm password is not match password";
     }
+
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS count FROM users WHERE username = :username OR email = :email");
+    $stmt->execute([':username' => $username, ':email' => $email]);
+    $count = $stmt->fetchColumn();
+
+    if (!empty($count) && $count > 0) {
+        $errors[] = "The username or email is busy by another user";
+    }
+    
     if (empty($errors)) {
-        $stmt = $pdo->prepare("INSERT INTO users(`username`, `email`, `password`, `first_name`, `last_name`) VALUES(:username, :email, :password, :first_name, :last_name)");
-        $stmt->execute(array(
+
+            $stmt = $pdo->prepare("INSERT INTO users(`username`, `email`, `password`, `first_name`, `last_name`) VALUES(:username, :email, :password, :first_name, :last_name)");
+            $stmt->execute(array(
             "username" => $_POST["user_name"],
             "email" => $_POST["email"], 
             "password" => sha1($_POST["password"].SALT), 
             "first_name" => $_POST["first_name"], 
             "last_name" => $_POST["last_name"]));
-        header("location: login.php?registration=1");
+            header("location: login.php?registration=1");
+            
     }
 }
 
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta
+      name="author"
+      content="Mark Otto, Jacob Thornton, and Bootstrap contributors"
+    />
+    <meta name="generator" content="Astro v5.13.2" />
+    <title>registration | guestbook.yan-coder.com</title>
+    <link
+      rel="canonical"
+      href="https://getbootstrap.com/docs/5.3/examples/sign-in/"
+    />
+    <script src="assets/js/color-modes.js"></script>
+    <link href="assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <meta name="theme-color" content="#712cf9" />
+    <link href="register_login.css" rel="stylesheet" />
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+      .b-example-divider {
+        width: 100%;
+        height: 3rem;
+        background-color: #0000001a;
+        border: solid rgba(0, 0, 0, 0.15);
+        border-width: 1px 0;
+        box-shadow:
+          inset 0 0.5em 1.5em #0000001a,
+          inset 0 0.125em 0.5em #00000026;
+      }
+      .b-example-vr {
+        flex-shrink: 0;
+        width: 1.5rem;
+        height: 100vh;
+      }
+      .bi {
+        vertical-align: -0.125em;
+        fill: currentColor;
+      }
+      .nav-scroller {
+        position: relative;
+        z-index: 2;
+        height: 2.75rem;
+        overflow-y: hidden;
+      }
+      .nav-scroller .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        padding-bottom: 1rem;
+        margin-top: -1px;
+        overflow-x: auto;
+        text-align: center;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      .btn-bd-primary {
+        --bd-violet-bg: #712cf9;
+        --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+        --bs-btn-font-weight: 600;
+        --bs-btn-color: var(--bs-white);
+        --bs-btn-bg: var(--bd-violet-bg);
+        --bs-btn-border-color: var(--bd-violet-bg);
+        --bs-btn-hover-color: var(--bs-white);
+        --bs-btn-hover-bg: #6528e0;
+        --bs-btn-hover-border-color: #6528e0;
+        --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+        --bs-btn-active-color: var(--bs-btn-hover-color);
+        --bs-btn-active-bg: #5a23c8;
+        --bs-btn-active-border-color: #5a23c8;
+      }
+      .bd-mode-toggle {
+        z-index: 1500;
+      }
+      .bd-mode-toggle .bi {
+        width: 1em;
+        height: 1em;
+      }
+      .bd-mode-toggle .dropdown-menu .active .bi {
+        display: block !important;
+      }
+      .input {
+        border-radius: 6px !important;
+      }
+    </style>
+  </head>
+  <body class="d-flex align-items-center py-4 bg-body-tertiary">
 
-    <meta charset="UTF-8">
-    <title>Guest Book</title>
+    <main class="form-signin w-100 m-auto">
+      <form method="POST">
 
-</head>
-<body>
-    <?php if (!empty($isRegistered)) :?>
-        <h2>Registered! Use your data to log in</h2>
-    <?php endif;?>
-    <h1>Registration Page</h1>
+        <h1 class="h3 mb-3 fw-normal">Register now!</h1>
 
-    <div>
+        <div style="color: red;">
+          <?php foreach ($errors as $error) :?>
+            <p><?php echo $error; ?></p>
+          <?php endforeach; ?>
+        </div>
 
-        <form method="POST" action="registration.php">
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control input"
+            id="floatingInput"
+            placeholder="name@example.com"
+            name="user_name"
+            required=""
+            value="<?php echo (!empty($_POST["user_name"]) ? $_POST["user_name"] : ''); ?>"
+          />
+          <label for="floatingInput">Username</label>
+        </div>
 
-            <div style="color: red;">
-                <?php foreach ($errors as $error) :?>
-                    <p><?php echo $error; ?></p>
-                <?php endforeach; ?>
-            </div>
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control input"
+            id="floatingPassword"
+            placeholder="Email"
+            name="email" 
+            required="" 
+            value="<?php echo (!empty($_POST["email"]) ? $_POST["email"] : ''); ?>"
+          />
+          <label for="floatingPassword">Email adress</label>
+        </div>
 
-            <div>
-                <label>User Name:</label>
-                <div>
-                    <input type="text" name="user_name" required="" value="<?php echo (!empty($_POST["user_name"]) ? $_POST["user_name"] : ''); ?>">
-                </div>
-            </div>
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control input"
+            id="floatingPassword"
+            placeholder="last name"
+            name="first_name" 
+            required="" 
+            value="<?php echo (!empty($_POST["first_name"]) ? $_POST["first_name"] : ''); ?>"
+          />
+          <label for="floatingPassword">First name</label>
+        </div>
 
-            <div>
-                <label>Email:</label>
-                <div>
-                    <input type="text" name="email" required="" value="<?php echo (!empty($_POST["email"]) ? $_POST["email"] : ''); ?>">
-                </div>
-            </div>
+        <div class="form-floating">
+          <input
+            type="text"
+            class="form-control input"
+            id="floatingPassword"
+            placeholder="Last name"
+            name="last_name" 
+            required="" 
+            value="<?php echo (!empty($_POST["last_name"]) ? $_POST["last_name"] : ''); ?>"
+          />
+          <label for="floatingPassword">Last name</label>
+        </div>
 
-            <div>
-                <label>First Name:</label>
-                <div>
-                    <input type="text" name="first_name" required="" value="<?php echo (!empty($_POST["first_name"]) ? $_POST["first_name"] : ''); ?>">
-                </div>
-            </div>
+        <div class="form-floating">
+          <input
+            type="password"
+            class="form-control input"
+            id="floatingPassword"
+            placeholder="Password"
+            name="password" 
+            required="" value=""
+          />
+          <label for="floatingPassword">Password</label>
+        </div>
 
-            <div>
-                <label>Last Name:</label>
-                <div>
-                    <input type="text" name="last_name" required="" value="<?php echo (!empty($_POST["last_name"]) ? $_POST["last_name"] : ''); ?>">
-                </div>
-            </div>
+        <div class="form-floating">
+          <input
+            type="password"
+            class="form-control input"
+            id="floatingPassword"
+            placeholder="Password"
+            name="confirm_password" 
+            required="" 
+            value="<?php echo (!empty($_POST["user_name"]) ? $_POST["user_name"] : ''); ?>"
+          />
+          <label for="floatingPassword">Confirm password</label>
+        </div>
 
-            <div>
-                <label>Password:</label>
-                <div>
-                    <input type="password" name="password" required="" value="">
-                </div>
-            </div>
+        <!-- <div class="form-check text-start my-3">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            value="remember-me"
+            id="checkDefault"
+          />
+          <label class="form-check-label" for="checkDefault">
+            Remember me
+          </label>
+        </div> -->
 
-            <div>
-                <label>Confirm Password:</label>
-                <div>
-                    <input type="password" name="confirm_password" required="" value="<?php echo (!empty($_POST["user_name"]) ? $_POST["user_name"] : ''); ?>">
-                </div>
-            </div>
+        <input class="btn btn-primary w-100 py-2 submit" type="submit" name="submit" value="Register">
 
-            <div>
-                <br>
-                <input type="submit" name="submit" value="Register">
-            </div>
+        <a href="login.php">Have an account? Login now!</a>
 
-        </form>
+        <p class="mt-5 mb-3 text-body-secondary">&copy; yan-coder 2025</p>
 
-    </div>
-
-</body>
+      </form>
+    </main>
+    <script
+      src="assets/dist/js/bootstrap.bundle.min.js"
+      class="astro-vvvwv3sm"
+    ></script>
+  </body>
 </html>
