@@ -10,7 +10,7 @@ if (!empty($_POST["comment"])) {
         $stmt->execute(array("user_id" => $_SESSION["user_id"], "comment" => $_POST["comment"]));
     }   
 
-$stmt = $pdo->prepare("SELECT * FROM comments ORDER BY id DESC");
+$stmt = $pdo->prepare("SELECT * FROM `comments` LEFT JOIN users ON user_id=users.id");
 $stmt->execute();
 $comments = $stmt->fetchAll();
 
@@ -38,10 +38,10 @@ $comments = $stmt->fetchAll();
       rel="canonical"
       href="https://getbootstrap.com/docs/5.3/examples/pricing/"
     />
-    <script src="assets/js/color-modes.js"></script>
-    <link href="assets/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="js/color-modes.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
     <meta name="theme-color" content="#712cf9" />
-    <link href="main.css" rel="stylesheet" />
+    <link href="css/main.css" rel="stylesheet" />
     <style>
       .bd-placeholder-img {
         font-size: 1.125rem;
@@ -130,7 +130,26 @@ $comments = $stmt->fetchAll();
         resize: none;
       }
 
+      .commentsTitle {
+        margin: 10px;
+      }
+
     </style>
+
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){
+            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+            m[i].l=1*new Date();
+            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105184923', 'ym');
+
+        ym(105184923, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/105184923" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+
   </head>
   <body>
 
@@ -187,7 +206,7 @@ $comments = $stmt->fetchAll();
 
         <div id="#comments-panel">
 
-          <h3>Comments:</h3>
+          <h3 class="commentsTitle">Comments:</h3>
 
             <?php foreach ( $comments as $comment ) : ?>
 
@@ -200,7 +219,7 @@ $comments = $stmt->fetchAll();
             $commentTemplate = <<<TXT
             <div class="card">
               <div class="card-header">
-                Quote
+            {$comment["username"]}
               </div>
               <div class="card-body">
                 <figure>
@@ -237,7 +256,7 @@ $comments = $stmt->fetchAll();
       </footer>
     </div>
     <script
-      src="assets/dist/js/bootstrap.bundle.min.js"
+      src="js/bootstrap.bundle.min.js"
       class="astro-vvvwv3sm"
     ></script>
   </body>
