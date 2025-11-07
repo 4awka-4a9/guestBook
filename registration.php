@@ -52,7 +52,15 @@ if (!empty($_POST)) {
     if ($_POST["password"] !== $_POST["confirm_password"]) {
         $errors[] = "Your confirm password is not match password";
     }
+    function validateEMAIL($email) {
+    $v = "/[a-zA-Z0-9_.+ -]+@[a-zA-Z0-9-]+\.[a-zA-Z]+/";
 
+    return (bool) preg_match($v, $email);
+    }
+
+    if (validateEMAIL($email) == false) {
+      $errors[] = "Email is not valid";
+    }
     $stmt = $pdo->prepare("SELECT COUNT(*) AS count FROM users WHERE username = :username OR email = :email");
     $stmt->execute([':username' => $username, ':email' => $email]);
     $count = $stmt->fetchColumn();
