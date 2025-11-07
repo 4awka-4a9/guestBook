@@ -28,6 +28,12 @@ $comments = $stmt->fetchAll();
     />
     <meta name="generator" content="Astro v5.13.2" />
     <title>home | guestbook.yan-coder.com</title>
+
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
     <link
       rel="canonical"
       href="https://getbootstrap.com/docs/5.3/examples/pricing/"
@@ -115,6 +121,15 @@ $comments = $stmt->fetchAll();
       #comments-panel{border: 1px dashed black; width: 50%; padding-left: 20px; margin-top: 20px;}
       .comment-date{font-style: italic;}
       
+      .card {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+
+      .textarea {
+        resize: none;
+      }
+
     </style>
   </head>
   <body>
@@ -125,26 +140,21 @@ $comments = $stmt->fetchAll();
           class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom"
         >
           <a
-            href="/"
+            href="#"
             class="d-flex align-items-center link-body-emphasis text-decoration-none"
           >
             <span class="fs-4">Guest Book</span>
           </a>
           <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
             <a
-              class="me-3 py-2 link-body-emphasis text-decoration-none"
+              class="btn btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none"
               href="#"
               >Home</a
             >
             <a
-              class="me-3 py-2 link-body-emphasis text-decoration-none"
-              href="registration.php"
-              >Registration</a
-            >
-            <a
-              class="me-3 py-2 link-body-emphasis text-decoration-none"
-              href="login.php"
-              >Login</a
+              class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none"
+              href="logout.php"
+              >Log out</a
             >
           </nav>
         </div>
@@ -159,7 +169,7 @@ $comments = $stmt->fetchAll();
 
                 <label>Comment</label>
                 <div>
-                    <textarea name="comment"></textarea>
+                    <textarea class="form-control textarea" name="comment"></textarea>
                 </div>
 
             </div>
@@ -167,7 +177,7 @@ $comments = $stmt->fetchAll();
             <div>
 
                 <br>
-                <input type="submit" name="submit" value="Save">
+                <input class="btn btn-outline-secondary"type="submit" name="submit" value="Save">
 
             </div>
 
@@ -180,7 +190,34 @@ $comments = $stmt->fetchAll();
           <h3>Comments:</h3>
 
             <?php foreach ( $comments as $comment ) : ?>
-            <p<?php if ($comment["user_id"] == $_SESSION["user_id"]) echo ' style="font-weight: bold;"';?>><?php echo $comment["comment"];?><span class="comment-date">(<?php echo $comment["created_at"];?>)</span></p>
+
+            <?php
+
+            $comment["comment"] = htmlspecialchars($comment["comment"]);
+
+            $comment["comment"] = preg_replace('~https?://[^\s]+|www\.[^\s]+~i', '<a href="$0">$0</a>', $comment["comment"]);
+            
+            $commentTemplate = <<<TXT
+            <div class="card">
+              <div class="card-header">
+                Quote
+              </div>
+              <div class="card-body">
+                <figure>
+                  <blockquote class="blockquote">
+                    <p><pre>{$comment["comment"]}</pre></p>
+                  </blockquote>
+                  <figcaption class="blockquote-footer">
+                      {$comment["created_at"]}
+                  </figcaption>
+                </figure>
+              </div>
+            </div>
+            TXT;
+            
+            ?>
+
+            <?php echo $commentTemplate;?>
             <?php endforeach; ?>
 
         </div>
@@ -189,25 +226,12 @@ $comments = $stmt->fetchAll();
       <footer class="pt-4 my-md-5 pt-md-5 border-top">
         <div class="row">
           <div class="col-12 col-md">
-            <img
-              class="mb-2"
-              src="../assets/brand/bootstrap-logo.svg"
-              alt=""
-              width="24"
-              height="19"
-            />
             <small class="d-block mb-3 text-body-secondary"
               >&copy; yan-coder 2025</small
             >
           </div>
           <div class="col-6 col-md">
-            <h5><a class="me-3 py-2 link-body-emphasis text-decoration-none" href="#">Home</a></h5>
-          </div>
-          <div class="col-6 col-md">
-            <h5><a class="me-3 py-2 link-body-emphasis text-decoration-none" href="registration.php">Registration</a></h5>
-          </div>
-          <div class="col-6 col-md">
-            <h5><a class="me-3 py-2 link-body-emphasis text-decoration-none" href="login.php">Login</a></h5>
+            <h5><a class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none" href="#">Home</a></h5>
           </div>
         </div>
       </footer>
