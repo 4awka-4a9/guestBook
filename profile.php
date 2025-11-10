@@ -5,14 +5,47 @@ if (empty($_SESSION["user_id"])) {
     header("location: login.php");
 }
 
-if (!empty($_POST["comment"])) {
-        $stmt = $pdo->prepare("INSERT INTO comments(`user_id`, `comment`) VALUES(:user_id, :comment)");
-        $stmt->execute(array("user_id" => $_SESSION["user_id"], "comment" => $_POST["comment"]));
-    }   
+$errors = [];
+if (!empty($_POST)) {
 
-$stmt = $pdo->prepare("SELECT users.username, comments.comment, comments.created_at FROM `comments` LEFT JOIN users ON user_id=users.id ORDER BY comments.id DESC;");
-$stmt->execute();
-$comments = $stmt->fetchAll();
+    if (empty($_POST["user_name"])) {
+        $errors[] = "Please enter user name";
+    }
+    if (empty($_POST["first_name"])) {
+        $errors[] = "Please enter first Name";
+    }
+    if (empty($_POST["last_name"])) {
+        $errors[] = "Please enter last Name";
+    }
+    if (empty($_POST["password"])) {
+        $errors[] = "Please enter password";
+    }
+    if (empty($_POST["confirm_password"])) {
+        $errors[] = "Please confirm password";
+    }
+
+    if (strlen($_POST["user_name"]) > 100) {
+        $errors[] = "User name if too long";   
+    }
+    if (strlen($_POST["first_name"]) > 80) {
+        $errors[] = "First name is too long";
+    }
+    if (strlen($_POST["last_name"]) > 100) {
+        $errors[] = "Last name if too long";
+    }
+    if (strlen($_POST["password"]) < 6) {
+        $errors[] = "Password is too short";
+    }
+    if ($_POST["password"] !== $_POST["confirm_password"]) {
+        $errors[] = "Your confirm password is not match password";
+    }
+
+    if (empty($errors)) {
+        $stmt = $pdo->prepare("UPDATE users SET username = :username, first_name = :first_name, last_name = :last_name, password = :password WHERE id = :user_id");
+        $stmt->execute(array(":username" => $_POST["user_name"], ":user_id" => $_SESSION["user_id"], ":first_name" => $_POST["first_name"], ":last_name" => $_POST["last_name"], ":password" => $_POST["password"].SALT));
+        $id = $stmt->fetchColumn();
+    }
+}
 
 ?>
 
@@ -27,7 +60,7 @@ $comments = $stmt->fetchAll();
       content="yan-coder"
     />
     <meta name="generator" content="Astro v5.13.2" />
-    <title>home | guestbook.yan-coder.com</title>
+    <title>profile | guestbook.yan-coder.com</title>
 
     <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
@@ -129,7 +162,7 @@ $comments = $stmt->fetchAll();
         resize: none;
       }
 
-      .commentsTitle {
+      .m-t-b {
         margin-top: 10px;
         margin-bottom: 10px;
       }
@@ -166,66 +199,86 @@ $comments = $stmt->fetchAll();
       </header>
       <main>
         
-        <div id="#comments-form"><h3>Please add your comment</h3>
+        <form method="POST">
 
-        <form method="POST" action="index.php">
+            <div style="color: red;">
+                <?php foreach ($errors as $error) :?>
+                    <p><?php echo $error; ?></p>
+                <?php endforeach; ?>
+            </div>
 
-            <div>
+            <label class="m-t-b">Edit profile</label>
 
-                <label>Comment</label>
-                <div>
-                    <textarea class="form-control textarea" name="comment"></textarea>
-                </div>
+            <div class="form-floating m-t-b">
+                <input
+                    type="text"
+                    class="form-control input"
+                    id="floatingInput"
+                    placeholder="name@example.com"
+                    name="user_name"
+                    value="<?php echo (!empty($_POST["user_name"]) ? $_POST["user_name"] : ''); ?>"
+                />
+                <label for="floatingInput">Username</label>
+            </div>
 
+            <div class="form-floating m-t-b">
+                <input
+                    type="text"
+                    class="form-control input"
+                    id="floatingPassword"
+                    placeholder="last name"
+                    name="first_name" 
+                    required="" 
+                    value="<?php echo (!empty($_POST["first_name"]) ? $_POST["first_name"] : ''); ?>"
+                />
+                <label for="floatingPassword">First name</label>
+            </div>
+
+            <div class="form-floating m-t-b">
+                <input
+                    type="text"
+                    class="form-control input"
+                    id="floatingPassword"
+                    placeholder="Last name"
+                    name="last_name" 
+                    required="" 
+                    value="<?php echo (!empty($_POST["last_name"]) ? $_POST["last_name"] : ''); ?>"
+                />
+                <label for="floatingPassword">Last name</label>
+            </div>
+
+            <div class="form-floating m-t-b">
+                <input
+                    type="password"
+                    class="form-control input"
+                    id="floatingPassword"
+                    placeholder="Password"
+                    name="password" 
+                    required="" value=""
+                />
+                <label for="floatingPassword">Password</label>
+            </div>
+
+            <div class="form-floating m-t-b">
+                <input
+                    type="password"
+                    class="form-control input"
+                    id="floatingPassword"
+                    placeholder="Password"
+                    name="confirm_password" 
+                    required="" 
+                    value=""
+                />
+                <label for="floatingPassword">Confirm password</label>
             </div>
 
             <div>
 
-                <br>
-                <input class="btn btn-outline-secondary"type="submit" name="submit" value="Save">
+                <input class="btn btn-outline-secondary m-t-b" type="submit" name="submit" value="Save">
 
             </div>
 
         </form>
-
-        </div>  
-
-        <div id="#comments-panel">
-
-          <h3 class="commentsTitle">Comments:</h3>
-
-            <?php foreach ( $comments as $comment ) : ?>
-
-            <?php
-
-            $comment["comment"] = htmlspecialchars($comment["comment"]);
-
-            $comment["comment"] = preg_replace('~https?://[^\s]+|www\.[^\s]+~i', '<a href="$0">$0</a>', $comment["comment"]);
-            
-            $commentTemplate = <<<TXT
-            <div class="card">
-              <div class="card-header">
-            {$comment["username"]}
-              </div>
-              <div class="card-body">
-                <figure>
-                  <blockquote class="blockquote">
-                    <p><pre>{$comment["comment"]}</pre></p>
-                  </blockquote>
-                  <figcaption class="blockquote-footer">
-                      {$comment["created_at"]}
-                  </figcaption>
-                </figure>
-              </div>
-            </div>
-            TXT;
-            
-            ?>
-
-            <?php echo $commentTemplate;?>
-            <?php endforeach; ?>
-
-        </div>
 
       </main>
       <footer class="pt-4 my-md-5 pt-md-5 border-top">

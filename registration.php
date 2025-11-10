@@ -53,13 +53,13 @@ if (!empty($_POST)) {
         $errors[] = "Your confirm password is not match password";
     }
     function validateEMAIL($email) {
-    $v = "/[a-zA-Z0-9_.+ -]+@[a-zA-Z0-9-]+\.[a-zA-Z]+/";
+        $v = "/[a-zA-Z0-9_.+ -]+@[a-zA-Z0-9-]+\.[a-zA-Z]+/";
 
-    return (bool) preg_match($v, $email);
+        return (bool) preg_match($v, $email);
     }
 
     if (validateEMAIL($email) == false) {
-      $errors[] = "Email is not valid";
+        $errors[] = "Email is not valid";
     }
     $stmt = $pdo->prepare("SELECT COUNT(*) AS count FROM users WHERE username = :username OR email = :email");
     $stmt->execute([':username' => $username, ':email' => $email]);
@@ -98,10 +98,9 @@ if (!empty($_POST)) {
     <meta name="generator" content="Astro v5.13.2" />
     <title>registration | guestbook.yan-coder.com</title>
 
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
-    <link rel="manifest" href="favicon/site.webmanifest">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
 
     <link
       rel="canonical"
@@ -189,20 +188,6 @@ if (!empty($_POST)) {
       }
     </style>
 
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
-        (function(m,e,t,r,i,k,a){
-            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105184923', 'ym');
-
-        ym(105184923, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/105184923" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
-
   </head>
   <body class="d-flex align-items-center py-4 bg-body-tertiary">
 
@@ -289,7 +274,7 @@ if (!empty($_POST)) {
             placeholder="Password"
             name="confirm_password" 
             required="" 
-            value="<?php echo (!empty($_POST["user_name"]) ? $_POST["user_name"] : ''); ?>"
+            value=""
           />
           <label for="floatingPassword">Confirm password</label>
         </div>
@@ -311,6 +296,8 @@ if (!empty($_POST)) {
         <a href="login.php">Have an account? Login now!</a>
 
         <p class="mt-5 mb-3 text-body-secondary">&copy; yan-coder 2025</p>
+
+        <!-- Yandex.Metrika informer --> <a href="https://metrika.yandex.ru/stat/?id=105184923&amp;from=informer" target="_blank" rel="nofollow">     <img src="https://informer.yandex.ru/informer/105184923/3_1_FFFFFFFF_EFEFEFFF_0_pageviews"          style="width:88px; height:31px; border:0;"          alt="Яндекс.Метрика"          title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)"         class="ym-advanced-informer" data-cid="105184923" data-lang="ru"/> </a> <!-- /Yandex.Metrika informer -->  <!-- Yandex.Metrika counter --> <script type="text/javascript">     (function(m,e,t,r,i,k,a){         m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};         m[i].l=1*new Date();         for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}         k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)     })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105184923', 'ym');      ym(105184923, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true}); </script> <noscript><div><img src="https://mc.yandex.ru/watch/105184923" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->   
 
       </form>
     </main>
