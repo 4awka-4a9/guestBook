@@ -10,7 +10,12 @@ if (!empty($_POST["comment"])) {
         $stmt->execute(array("user_id" => $_SESSION["user_id"], "comment" => $_POST["comment"]));
     }   
 
-$stmt = $pdo->prepare("SELECT users.username, comments.comment, comments.created_at FROM `comments` LEFT JOIN users ON user_id=users.id ORDER BY comments.id DESC;");
+if (isset($_GET["action"]) && $_GET["action"] == "delete_comment") {
+    $stmt = $pdo->prepare("DELETE FROM `comments` WHERE id = :id AND user_id = :user_id");
+    $stmt->execute(array("user_id" => $_SESSION["user_id"], "id" => $_GET["comment_id"]));
+}
+
+$stmt = $pdo->prepare("SELECT users.username, comments.comment, comments.created_at, users.avatar, comments.id, comments.user_id FROM `comments` LEFT JOIN users ON user_id=users.id ORDER BY comments.id DESC;");
 $stmt->execute();
 $comments = $stmt->fetchAll();
 
@@ -134,6 +139,13 @@ $comments = $stmt->fetchAll();
         margin-bottom: 10px;
       }
 
+      .avatar {
+        object-fit: cover;
+        width: 30px;
+        height: 30px;
+        border-radius: 100px;
+      }
+
     </style>
 
   </head>
@@ -153,14 +165,20 @@ $comments = $stmt->fetchAll();
           <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
             <a
               class="btn btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none"
-              href="#"
+              href="index.php"
               >Home</a
+            >
+            <a
+              class="btn btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none"
+              href="profile.php"
+              >Edit profile</a
             >
             <a
               class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none"
               href="logout.php"
               >Log out</a
             >
+
           </nav>
         </div>
       </header>
@@ -199,13 +217,22 @@ $comments = $stmt->fetchAll();
             <?php
 
             $comment["comment"] = htmlspecialchars($comment["comment"]);
+            $comment["username"] = htmlspecialchars($comment["username"]);
 
             $comment["comment"] = preg_replace('~https?://[^\s]+|www\.[^\s]+~i', '<a href="$0">$0</a>', $comment["comment"]);
+
+            $delete_comment = "";
+
+            if ($_SESSION["user_id"] == $comment["user_id"]) {
+                $delete_comment = '<a href="index.php?action=delete_comment&comment_id=' . htmlspecialchars($comment["id"]) . '" class="ms-auto">Delete</a>';
+            }
             
             $commentTemplate = <<<TXT
             <div class="card">
-              <div class="card-header">
-            {$comment["username"]}
+              <div class="card-header d-flex align-items-center">
+                <img class="avatar me-2" src="avatars/{$comment["avatar"]}">
+                {$comment["username"]}
+                {$delete_comment}
               </div>
               <div class="card-body">
                 <figure>
@@ -238,6 +265,12 @@ $comments = $stmt->fetchAll();
           </div>
           <div class="col-6 col-md">
             <h5><a class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none" href="#">Home</a></h5>
+          </div>
+          <div class="col-6 col-md">
+            <h5><a class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none" href="profile.php">Edit profile</a></h5>
+          </div>
+          <div class="col-6 col-md">
+            <h5><a class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none" href="#">Log out</a></h5>
           </div>
         </div>
       </footer>

@@ -8,6 +8,9 @@ if (empty($_SESSION["user_id"])) {
 $errors = [];
 if (!empty($_POST)) {
 
+    $sql = "";
+    $update = ["username" => $_POST["user_name"], "user_id" => $_SESSION["user_id"], "first_name" => $_POST["first_name"], "last_name" => $_POST["last_name"], "about_me" => $_POST["about_me"], "password" => sha1($_POST["password"].SALT)];
+
     if (empty($_POST["user_name"])) {
         $errors[] = "Please enter user name";
     }
@@ -40,9 +43,56 @@ if (!empty($_POST)) {
         $errors[] = "Your confirm password is not match password";
     }
 
+    if (isset($_FILES["fileToUpload"]["name"])) {
+      $target_dir = "/avatars/";
+      $extension = pathinfo($_FILES["fileToUpload"]["name"], PATHINFO_EXTENSION);
+      $filename = "avatar{$_SESSION['user_id']}." . $extension;
+      $target_file = $_SERVER['DOCUMENT_ROOT'] . $target_dir . $filename;
+      $uploadOk = 1;
+
+      $update["avatar"] = $filename;
+      $sql = ", avatar = :avatar";
+
+      $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
+
+      if ($check !== false) {
+          echo "File is an image - " . $check["mime"] . ".";
+          $uploadOk = 1;
+      }
+
+      else {
+          echo "File is not an image.";
+          $uploadOk = 0;
+      }
+
+      if ($_FILES["fileToUpload"]["size"] > 500000) {
+          $errors[] = "Sorry, your file is too large.";
+          $uploadOk = 0;
+      }
+
+      if ($extension != "jpg" && $extension != "png" && $extension != "jpeg" && $extension != "gif") {
+          $errors[] = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+          $uploadOk = 0;
+      } 
+
+      if ($uploadOk == 0) {
+          $errors[] = "Sorry, your file was not uploaded.";
+      }
+
+      else {
+          if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+        
+          }
+
+          else {
+              $errors[] = "Sorry, your file was not uploaded.";
+          }
+        }
+    }
+
     if (empty($errors)) {
-        $stmt = $pdo->prepare("UPDATE users SET username = :username, first_name = :first_name, last_name = :last_name, password = :password WHERE id = :user_id");
-        $stmt->execute(array(":username" => $_POST["user_name"], ":user_id" => $_SESSION["user_id"], ":first_name" => $_POST["first_name"], ":last_name" => $_POST["last_name"], ":password" => $_POST["password"].SALT));
+        $stmt = $pdo->prepare("UPDATE users SET username = :username, first_name = :first_name, last_name = :last_name, about_me = :about_me, password = :password $sql WHERE id = :user_id");
+        $stmt->execute($update);
         $id = $stmt->fetchColumn();
     }
 }
@@ -186,7 +236,7 @@ if (!empty($_POST)) {
           <nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">
             <a
               class="btn btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none"
-              href="#"
+              href="index.php"
               >Home</a
             >
             <a
@@ -199,7 +249,9 @@ if (!empty($_POST)) {
       </header>
       <main>
         
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
+
+            <label class="m-t-b">Edit profile</label>
 
             <div style="color: red;">
                 <?php foreach ($errors as $error) :?>
@@ -207,7 +259,30 @@ if (!empty($_POST)) {
                 <?php endforeach; ?>
             </div>
 
-            <label class="m-t-b">Edit profile</label>
+            <!-- <div class="form-floating m-t-b">
+                <input
+                    type="file"
+                    class="form-control input"
+                    id="fileToUpload"
+                    name="fileToUpload"
+                />
+                <label for="floatingInput">Upload avatar</label>
+            </div> -->
+
+            <div class="input-group">
+              <input
+                  type="file"
+                  class="form-control d-none" 
+                  id="fileToUpload"
+                  name="fileToUpload"
+              />
+              
+              <label class="btn btn-primary upload-avatar-btn" for="fileToUpload" id="uploadButtonLabel">
+                  Upload avatar
+              </label>
+
+              <input type="text" class="form-control" id="fileNameDisplay" placeholder="No file selected" readonly>
+          </div>
 
             <div class="form-floating m-t-b">
                 <input
@@ -272,6 +347,18 @@ if (!empty($_POST)) {
                 <label for="floatingPassword">Confirm password</label>
             </div>
 
+            <div class="form-floating m-t-b">
+                <input
+                    type="text"
+                    class="form-control input"
+                    id="floatingPassword"
+                    placeholder="About me"
+                    name="about_me"  
+                    value=""
+                />
+                <label for="floatingPassword">About me</label>
+            </div>
+
             <div>
 
                 <input class="btn btn-outline-secondary m-t-b" type="submit" name="submit" value="Save">
@@ -290,7 +377,7 @@ if (!empty($_POST)) {
             <!-- Yandex.Metrika informer --> <a href="https://metrika.yandex.ru/stat/?id=105184923&amp;from=informer" target="_blank" rel="nofollow">     <img src="https://informer.yandex.ru/informer/105184923/3_1_FFFFFFFF_EFEFEFFF_0_pageviews"          style="width:88px; height:31px; border:0;"          alt="Яндекс.Метрика"          title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)"         class="ym-advanced-informer" data-cid="105184923" data-lang="ru"/> </a> <!-- /Yandex.Metrika informer -->  <!-- Yandex.Metrika counter --> <script type="text/javascript">     (function(m,e,t,r,i,k,a){         m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};         m[i].l=1*new Date();         for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}         k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)     })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105184923', 'ym');      ym(105184923, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true}); </script> <noscript><div><img src="https://mc.yandex.ru/watch/105184923" style="position:absolute; left:-9999px;" alt="" /></div></noscript> <!-- /Yandex.Metrika counter -->   
           </div>
           <div class="col-6 col-md">
-            <h5><a class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none" href="#">Home</a></h5>
+            <h5><a class="btn  btn-outline-secondary me-3 py-2 link-body-emphasis text-decoration-none" href="index.php">Home</a></h5>
           </div>
         </div>
       </footer>
